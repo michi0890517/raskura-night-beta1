@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ラスクラ - 夜の世界 β</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+    }
+    #startButton {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 1rem 2rem;
+      background: #39ff14;
+      color: #000;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #39ff14;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <button id="startButton">🌌 冒険をはじめる</button>
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js';
+    import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/PointerLockControls.js';
+
+    let camera, scene, renderer, controls;
+    let objects = [];
+    let enemy;
+
+    document.getElementById('startButton').addEventListener('click', () => {
+      document.getElementById('startButton').style.display = 'none';
+      init();
+      animate();
+    });
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000);
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+
+      const light = new THREE.HemisphereLight(0xffffff, 0x444444);
+      light.position.set(0, 200, 0);
+      scene.add(light);
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      controls = new PointerLockControls(camera, document.body);
+      document.body.addEventListener('click', () => controls.lock());
+
+      scene.add(controls.getObject());
+
+      const floorGeometry = new THREE.PlaneGeometry(500, 500, 10, 10);
+      const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x223322 });
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.rotation.x = - Math.PI / 2;
+      scene.add(floor);
+
+      for (let i = 0; i < 50; i++) {
+        const trunk = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.5, 0.5, 5),
+          new THREE.MeshStandardMaterial({ color: 0x553311 })
+        );
+        trunk.position.set((Math.random() - 0.5) * 400, 2.5, (Math.random() - 0.5) * 400);
+        scene.add(trunk);
+        objects.push(trunk);
+      }
+
+      enemy = new THREE.Mesh(
+        new THREE.SphereGeometry(1.5, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0x000000 })
+      );
+      enemy.position.set(0, 1.5, -20);
+      scene.add(enemy);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      enemy.position.x += (Math.random() - 0.5) * 0.2;
+      enemy.position.z += (Math.random() - 0.5) * 0.2;
+
+      const distance = camera.position.distanceTo(enemy.position);
+      if (distance < 5) {
+        document.body.style.backgroundColor = 'red';
+        setTimeout(() => document.body.style.backgroundColor = 'black', 100);
+      }
+
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>
